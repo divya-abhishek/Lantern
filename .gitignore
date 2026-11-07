@@ -1,0 +1,51 @@
+# ---- .NET ----
+bin/
+obj/
+*.user
+*.suo
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+*.nupkg
+
+# ---- Android / Gradle ----
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/keystore.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+*.p12
+!android/app/debug.keystore
+
+# ---- Lantern runtime data ----
+dist/
+.verification/
+*.db
+*.db-shm
+*.db-wal
+# Runtime data lives outside the repo by default (%LOCALAPPDATA%/Lantern or --data-dir),
+# but ignore anything that ends up here anyway.
+data/
+cache/
+thumbnails/
+logs/
+
+# ---- Samples / test media ----
+samples/media/
+samples/out/
+samples/smoke-clip.mp4
+tools/mediamtx/mediamtx.exe
+
+# ---- Editors ----
+.vs/
+.vscode/
+*.swp
+Thumbs.db

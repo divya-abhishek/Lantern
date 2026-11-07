@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Same palette as the Windows app: dark cinematic, blue/purple accents. -->
+  <color name="lantern_bg">#FF06090F</color>
+  <color name="lantern_surface">#FF0F1523</color>
+  <color name="lantern_surface_alt">#FF161D30</color>
+  <color name="lantern_focus">#FF3378F5</color>
+  <color name="lantern_accent">#FF3378F5</color>
+  <color name="lantern_text">#FFE7EDFF</color>
+  <color name="lantern_muted">#FF8C97B2</color>
+  <color name="lantern_success">#FF35D07F</color>
+  <color name="lantern_black">#FF000000</color>
+</resources>

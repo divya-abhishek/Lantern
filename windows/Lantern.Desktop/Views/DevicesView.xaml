@@ -1,0 +1,143 @@
+<UserControl x:Class="Lantern.Desktop.Views.DevicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}"
+             SizeChanged="OnSizeChanged">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MinWidth="420" />
+        <ColumnDefinition x:Name="GapColumn" Width="22" />
+        <ColumnDefinition x:Name="SideColumn" Width="420" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition x:Name="StackRow" Height="0" />
+      </Grid.RowDefinitions>
+
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="Devices" Style="{StaticResource H1}" />
+        <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   Text="Open Lantern on your TV, projector or phone. Choose it under Available receivers and approve the connection on that device." />
+
+        <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+          <StackPanel>
+            <Expander Header="Pair with a code instead" Foreground="{StaticResource TextBrush}">
+            <StackPanel>
+            <TextBlock Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,2,0,0"
+                       Text="Enter the 4-digit code shown on the TV or projector." />
+
+            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+              <TextBox Style="{StaticResource CodeInput}"
+                       Text="{Binding PairingCodeInput, UpdateSourceTrigger=PropertyChanged}"
+                       ToolTip="The 4-digit code shown on the TV or projector" />
+              <Button Content="Pair" VerticalAlignment="Center" Padding="26,12"
+                      Style="{StaticResource PrimaryButton}"
+                      Command="{Binding ApprovePairingCommand}"
+                      ToolTip="Connect the TV or projector that is showing this code" />
+            </StackPanel>
+
+            <TextBlock Text="{Binding PendingSummary}" Style="{StaticResource Caption}" TextWrapping="Wrap"
+                       Margin="0,8,0,0" />
+            </StackPanel>
+            </Expander>
+          </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,18,0,0">
+          <StackPanel>
+            <TextBlock Text="Available receivers" Style="{StaticResource H3}" />
+            <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
+                       Text="Click Connect, then select Yes on the receiver. For manual pairing, enter the code shown there." />
+
+            <ItemsControl ItemsSource="{Binding DiscoveredServers}" Margin="0,10,0,0">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Style="{StaticResource Panel}" Margin="0,0,0,8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <StackPanel><TextBlock Text="{Binding Name}" FontWeight="SemiBold" /><TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" Margin="0,5,0,0" /></StackPanel>
+                      <Button Grid.Column="1" Content="Connect" Margin="12,0,0,0"
+                              Command="{Binding DataContext.ConnectReceiverCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{Binding PairingMessage}" Style="{StaticResource Muted}" TextWrapping="Wrap"
+                       Margin="0,6,0,6" />
+
+            <TextBlock Text="No receiver is online yet. Open Lantern on Android and keep both devices on the same local network."
+                       TextWrapping="Wrap" Margin="0,4,0,0">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource Caption}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding DiscoveredServers.Count}" Value="0">
+                      <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <Border x:Name="TrustedCard" Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top">
+        <StackPanel>
+          <TextBlock Text="Trusted devices" Style="{StaticResource H3}" />
+          <TextBlock Text="{Binding DevicesSummary}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+
+          <ItemsControl ItemsSource="{Binding TrustedDevices}" Margin="0,12,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Style="{StaticResource Panel}" Margin="0,0,0,10">
+                  <StackPanel>
+                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                    <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0" TextWrapping="Wrap">
+                      <Run Text="{Binding Model, Mode=OneWay}" />
+                      <Run Text="{Binding Platform, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding CapabilitiesSummary}" Style="{StaticResource Caption}"
+                               Margin="0,4,0,0" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                          <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="{StaticResource MutedBrush}" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding Online}" Value="True">
+                                <Setter Property="Fill" Value="{StaticResource SuccessBrush}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </Ellipse.Style>
+                      </Ellipse>
+                      <TextBlock Text="{Binding LastSeenUtc, StringFormat=Last seen {0:g}}"
+                                 Style="{StaticResource Caption}" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <Button Content="Remove device" Margin="0,12,0,0" HorizontalAlignment="Left"
+                            Style="{StaticResource DangerButton}"
+                            Command="{Binding DataContext.RevokeDeviceCommand,
+                                      RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                     Text="Removing a device deletes its token: the next connection needs a new code from the projector." />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </ScrollViewer>
+</UserControl>
+

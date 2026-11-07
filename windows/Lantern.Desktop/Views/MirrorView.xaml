@@ -1,0 +1,217 @@
+<UserControl x:Class="Lantern.Desktop.Views.MirrorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}"
+             SizeChanged="OnSizeChanged">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MinWidth="420" />
+        <ColumnDefinition x:Name="GapColumn" Width="22" />
+        <ColumnDefinition x:Name="SideColumn" Width="400" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition x:Name="StackRow" Height="0" />
+      </Grid.RowDefinitions>
+
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="Screen Mirror" Style="{StaticResource H1}" />
+        <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   Text="Share this PC’s screen and sound with your TV, projector or phone." />
+
+        <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+          <StackPanel>
+            <TextBlock Text="Capture source" Style="{StaticResource Label}" />
+            <ItemsControl ItemsSource="{Binding Displays}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <RadioButton Content="{Binding Label}" GroupName="source" Style="{StaticResource Pill}"
+                               Margin="0,0,8,8" Loaded="OnSourceLoaded" Checked="OnSourceChecked" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Resolution" Style="{StaticResource Label}" Margin="0,12,0,0" />
+            <StackPanel Orientation="Horizontal">
+              <!-- Bound to the view model rather than to their own visual state: a pill that shows
+                   1280 × 720 while the live session encodes 1920 × 1080 is what this page used to do,
+                   and a Checked handler that fires during view construction is what allowed it. -->
+              <RadioButton Content="1280 × 720 (recommended)" GroupName="res" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorAt720, Mode=TwoWay}" />
+              <RadioButton Content="1920 × 1080" GroupName="res" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorAt1080, Mode=TwoWay}" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0" TextWrapping="Wrap"
+                       Text="Start with 720p if the receiver is slow. Changing settings briefly restarts the stream." />
+
+            <TextBlock Text="Frame rate" Style="{StaticResource Label}" Margin="0,14,0,0" />
+            <StackPanel Orientation="Horizontal">
+              <!-- Both rates are real settings, and the one that is checked is the one sent to the server:
+                   the pills are bound to the view model so the panel and the stream cannot disagree. -->
+              <RadioButton Content="30 FPS" GroupName="fps" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorAt30, Mode=TwoWay}" />
+              <RadioButton Content="60 FPS" GroupName="fps" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorAt60, Mode=TwoWay}" />
+            </StackPanel>
+            <!-- Not a promise: what the server's own test encode managed on this machine, and the live
+                 panel below reports the rate the encoder actually delivered. -->
+            <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0" TextWrapping="Wrap"
+                       Text="{Binding MirrorFrameRateNote}" />
+
+            <TextBlock Text="Video quality" Style="{StaticResource Label}" Margin="0,14,0,0" />
+            <StackPanel Orientation="Horizontal">
+              <RadioButton Content="Low" GroupName="quality" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorQualityLow, Mode=TwoWay}" />
+              <RadioButton Content="Medium" GroupName="quality" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorQualityMedium, Mode=TwoWay}" />
+              <RadioButton Content="High" GroupName="quality" Style="{StaticResource Pill}"
+                           IsChecked="{Binding MirrorQualityHigh, Mode=TwoWay}" />
+            </StackPanel>
+
+            <TextBlock Text="Audio" Style="{StaticResource Label}" Margin="0,16,0,0" />
+            <CheckBox Content="Capture system audio" IsChecked="{Binding MirrorAudioEnabled}" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+              <Button Content="Start mirroring" Style="{StaticResource PrimaryButton}"
+                      Command="{Binding StartMirrorCommand}" IsEnabled="{Binding CanMirror}"
+                      ToolTip="Capture this PC's screen and stream it to the projector" />
+              <Button Content="Stop mirroring" Margin="10,0,0,0" Style="{StaticResource SecondaryButton}"
+                      Command="{Binding StopMirrorCommand}" IsEnabled="{Binding CanStopMirror}"
+                      ToolTip="Release the capture, the encoder and the audio device" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,18,0,0">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="Screen mirroring" Style="{StaticResource H3}" />
+              <TextBlock Text="{Binding MirrorStateLabel}" Margin="12,0,0,0" FontWeight="SemiBold"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource AccentBrightBrush}" />
+            </StackPanel>
+            <TextBlock Text="{Binding MirrorStatus}" Style="{StaticResource Muted}" TextWrapping="Wrap"
+                       Margin="0,8,0,0" />
+
+            <Expander Header="Stream details" Foreground="{StaticResource TextBrush}" Margin="0,14,0,0">
+            <Grid Margin="0,10,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Resolution" Style="{StaticResource Caption}" />
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MirrorLiveResolution}"
+                         Style="{StaticResource Caption}" Margin="10,0,0,0" />
+
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="Frame rate" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MirrorLiveFps}"
+                         Style="{StaticResource Caption}" Margin="10,6,0,0" />
+
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Bitrate" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding MirrorLiveBitrate}"
+                         Style="{StaticResource Caption}" Margin="10,6,0,0" />
+
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="Publisher clock" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MirrorLiveLatency}"
+                         Style="{StaticResource Caption}" Margin="10,6,0,0" TextWrapping="Wrap" />
+
+              <TextBlock Grid.Row="4" Grid.Column="0" Text="Receivers" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+              <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding MirrorLiveReceivers}"
+                         Style="{StaticResource Caption}" Margin="10,6,0,0" />
+
+              <TextBlock Grid.Row="5" Grid.Column="0" Text="Uptime" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+              <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding MirrorLiveUptime}"
+                         Style="{StaticResource Caption}" Margin="10,6,0,0" />
+            </Grid>
+            </Expander>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <Border x:Name="StatusCard" Grid.Column="2" Style="{StaticResource Card}" VerticalAlignment="Top">
+        <StackPanel>
+          <Image Source="{StaticResource IconMirror}" Width="40" Height="40" HorizontalAlignment="Center" />
+          <TextBlock Text="Watch on your receiver" Style="{StaticResource H3}" HorizontalAlignment="Center"
+                     Margin="0,14,0,0" />
+          <TextBlock Text="Open Lantern on your TV, projector or phone and select Screen Mirror, then Start receiving." Style="{StaticResource Muted}" TextWrapping="Wrap"
+                     Margin="0,10,0,0" />
+
+          <TextBlock Text="Lantern server" Style="{StaticResource Label}" Margin="0,20,0,4" />
+          <TextBlock Text="{Binding ServerName}" Style="{StaticResource H3}" />
+          <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+            <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+              <Ellipse.Style>
+                <Style TargetType="Ellipse">
+                  <Setter Property="Fill" Value="{StaticResource SuccessBrush}" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                      <Setter Property="Fill" Value="{StaticResource MutedBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Ellipse.Style>
+            </Ellipse>
+            <TextBlock Text="{Binding ConnectionLabel}" Margin="8,0,0,0" Style="{StaticResource Caption}" />
+          </StackPanel>
+          <!-- Where the projector dials in, rather than this app's own loopback address. -->
+          <TextBlock Text="{Binding LanAddressLabel}" Style="{StaticResource Caption}" Margin="0,4,0,0"
+                     TextWrapping="Wrap" />
+
+          <Expander Header="Hardware details" Foreground="{StaticResource TextBrush}" Margin="0,18,0,4">
+          <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Capture" Style="{StaticResource Caption}" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MirrorCaptureBackend}"
+                       Style="{StaticResource Caption}" Margin="10,0,0,0" TextWrapping="Wrap" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Encoder" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding MirrorEncoderSummary}"
+                       Style="{StaticResource Caption}" Margin="10,6,0,0" TextWrapping="Wrap" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Displays" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Displays.Count}"
+                       Style="{StaticResource Caption}" Margin="10,6,0,0" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Audio" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding MirrorAudioDevices}"
+                       Style="{StaticResource Caption}" Margin="10,6,0,0" TextWrapping="Wrap" />
+          </Grid>
+          </Expander>
+
+          <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="10" Padding="12"
+                  BorderBrush="{StaticResource BorderBrush2}" BorderThickness="1" Margin="0,18,0,0">
+            <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap"
+                       Text="Screen capture and audio keep running while this window is minimised. Open Screen Mirror on your paired Android receiver to watch over your local network." />
+          </Border>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </ScrollViewer>
+</UserControl>
+

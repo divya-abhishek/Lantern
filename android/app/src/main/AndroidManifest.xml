@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!-- LAN only: plain HTTP on the local network, no cloud, no account. -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <!-- The Lantern discovery protocol uses UDP multicast/broadcast on port 8788. -->
+  <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+  <!-- Projector/TV box first, but the app stays installable on phones for testing. -->
+  <uses-feature android:name="android.software.leanback" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+  <uses-feature android:name="android.hardware.wifi" android:required="false" />
+
+  <application
+      android:name=".LanternApp"
+      android:allowBackup="false"
+      android:banner="@drawable/tv_banner"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/app_name"
+      android:logo="@drawable/ic_lantern"
+      android:supportsRtl="false"
+      android:theme="@style/Theme.Lantern"
+      android:usesCleartextTraffic="true">
+
+    <activity
+        android:name=".MainActivity"
+        android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+        android:exported="true"
+        android:launchMode="singleTask"
+        android:screenOrientation="unspecified"
+        android:theme="@style/Theme.Lantern">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+
+    <!-- The fullscreen player. Config changes are absorbed so rotating/resizing never
+         recreates the activity and never tears the player down mid-playback. -->
+    <activity
+        android:name=".player.PlayerActivity"
+        android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+        android:exported="false"
+        android:launchMode="singleTop"
+        android:screenOrientation="landscape"
+        android:theme="@style/Theme.Lantern.Player" />
+
+    <!-- The screen mirror receiver. Separate from the media player on purpose: mirroring is a live
+         feed with its own buffering rules, and keeping it apart means the movie path is untouched. -->
+    <activity
+        android:name=".mirror.MirrorActivity"
+        android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+        android:exported="false"
+        android:launchMode="singleTop"
+        android:screenOrientation="landscape"
+        android:theme="@style/Theme.Lantern.Player" />
+  </application>
+</manifest>

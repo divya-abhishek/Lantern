@@ -1,0 +1,164 @@
+<UserControl x:Class="Lantern.Desktop.Views.LibraryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource UiFont}"
+             SizeChanged="OnSizeChanged">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition x:Name="StackRow" Height="0" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" MinWidth="420" />
+      <ColumnDefinition x:Name="GapColumn" Width="22" />
+      <ColumnDefinition x:Name="SideColumn" Width="380" />
+    </Grid.ColumnDefinitions>
+
+    <!-- title on the left, search on the right; on a narrow window the search moves under the
+         title instead of squeezing it -->
+    <Grid x:Name="HeaderGrid" Grid.Row="0" Grid.Column="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition x:Name="SearchColumn" Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition x:Name="SearchRow" Height="0" />
+      </Grid.RowDefinitions>
+
+      <StackPanel x:Name="TitleBlock" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top">
+        <TextBlock Text="Media Library" Style="{StaticResource H1}" />
+        <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"
+                   Text="Browse and play the movies and shows on this PC." />
+      </StackPanel>
+
+      <Grid x:Name="SearchPanel" Grid.Row="0" Grid.Column="1" Width="360"
+            VerticalAlignment="Top" Margin="16,8,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="SearchBox" Style="{StaticResource Input}" KeyDown="OnSearchKeyDown"
+                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                 ToolTip="Search by title, show or episode" />
+        <Button Grid.Column="1" Content="Search" Margin="8,0,0,0" Style="{StaticResource SecondaryButton}"
+                Command="{Binding SearchCommand}" />
+      </Grid>
+    </Grid>
+
+    <!-- filters -->
+    <WrapPanel Grid.Row="1" Grid.Column="0" Margin="0,18,0,8">
+      <RadioButton Content="Movies" GroupName="kind" Style="{StaticResource Pill}" IsChecked="True"
+                   Checked="OnKindMovies" />
+      <RadioButton Content="TV Shows" GroupName="kind" Style="{StaticResource Pill}" Checked="OnKindShows" />
+      <RadioButton Content="All" GroupName="kind" Style="{StaticResource Pill}" Checked="OnKindAll" />
+
+      <TextBlock Text="   " />
+      <RadioButton Content="Recently Added" GroupName="sort" Style="{StaticResource Pill}" IsChecked="True"
+                   Checked="OnSortAdded" />
+      <RadioButton Content="Name" GroupName="sort" Style="{StaticResource Pill}" Checked="OnSortName" />
+      <RadioButton Content="Year" GroupName="sort" Style="{StaticResource Pill}" Checked="OnSortYear" />
+    </WrapPanel>
+
+    <!-- grid -->
+    <ScrollViewer Grid.Row="2" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <ItemsControl ItemsSource="{Binding MediaItems}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Button Style="{StaticResource GhostButton}" Padding="8" Margin="0,0,14,14"
+                      Command="{Binding DataContext.OpenMediaCommand,
+                                RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      CommandParameter="{Binding}">
+                <StackPanel Width="168">
+                  <Border Height="228" CornerRadius="10" Background="{StaticResource SurfaceHoverBrush}">
+                    <Image Source="{Binding Poster}" Stretch="UniformToFill" />
+                  </Border>
+                  <TextBlock Text="{Binding Title}" Margin="0,10,0,0" FontWeight="SemiBold"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Caption}" Margin="0,3,0,0" />
+                  <ProgressBar Style="{StaticResource Progress}" Margin="0,6,0,0" Maximum="100"
+                               Value="{Binding ProgressPercent, Mode=OneWay}"
+                               Visibility="{Binding HasProgress, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Margin="0,10,0,0" MaxWidth="460" HorizontalAlignment="Left">
+          <StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Setter Property="Visibility" Value="Collapsed" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding MediaItems.Count}" Value="0">
+                  <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>
+
+          <Border Style="{StaticResource Panel}">
+            <StackPanel>
+              <TextBlock Text="{Binding LibraryEmptyTitle}" Style="{StaticResource H3}" />
+              <TextBlock Text="{Binding LibraryEmptyHint}" Style="{StaticResource Muted}" TextWrapping="Wrap"
+                         Margin="0,6,0,0" />
+              <Button x:Name="EmptyAction" Content="{Binding LibraryEmptyAction}" Margin="0,14,0,0"
+                      HorizontalAlignment="Left" Click="OnEmptyAction" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- === detail panel ================================================================= -->
+    <Border x:Name="DetailCard" Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Style="{StaticResource Card}"
+            VerticalAlignment="Top" Margin="0,18,0,0">
+      <StackPanel>
+        <Border Height="210" CornerRadius="10" Background="{StaticResource SurfaceHoverBrush}">
+          <Image Source="{Binding SelectedCard.Poster}" Stretch="UniformToFill" />
+        </Border>
+
+        <TextBlock Text="{Binding DetailTitle}" Style="{StaticResource H2}" Margin="0,16,0,0"
+                   TextWrapping="Wrap" />
+        <TextBlock Text="{Binding DetailMeta}" Style="{StaticResource Muted}" Margin="0,6,0,0"
+                   TextWrapping="Wrap" />
+
+        <TextBlock Text="{Binding DetailResume}" Margin="0,12,0,0" Foreground="{StaticResource AccentBrightBrush}"
+                   Visibility="{Binding HasResume, Converter={StaticResource BoolToVisibility}}" />
+
+        <WrapPanel Margin="0,16,0,0">
+          <Button Content="Play on this PC" Style="{StaticResource PrimaryButton}"
+                  Command="{Binding PlayCommand}"
+                  ToolTip="Open the direct-play stream with this PC's default media player" />
+          <Button Content="Resume" Margin="8,0,8,8" Style="{StaticResource SecondaryButton}"
+                  Command="{Binding ResumeCommand}"
+                  IsEnabled="{Binding HasResume}"
+                  ToolTip="Continue where this device left off (the position is stored on the server)" />
+          <Button Content="Copy link" Style="{StaticResource GhostButton}"
+                  Command="{Binding CopyLinkCommand}"
+                  ToolTip="Copy the stream URL for VLC or another device" />
+        </WrapPanel>
+
+        <TextBlock Text="Technical" Style="{StaticResource Label}" Margin="0,20,0,4" />
+        <TextBlock Text="{Binding DetailTechnical}" Style="{StaticResource Caption}"
+                   FontFamily="Consolas, Cascadia Mono" TextWrapping="Wrap" />
+
+        <TextBlock Text="Subtitles" Style="{StaticResource Label}" Margin="0,14,0,4" />
+        <TextBlock Text="{Binding DetailSubtitles}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
+
+        <TextBlock Style="{StaticResource Caption}" Margin="0,18,0,0" TextWrapping="Wrap"
+                   Text="Play opens the stream on this PC; the same title starts on the projector at the same position, because the resume point lives on the server." />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
+

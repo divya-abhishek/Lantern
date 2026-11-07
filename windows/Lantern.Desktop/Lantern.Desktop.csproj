@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Screen enumeration for the mirror page. The WinForms implicit usings are dropped so
+         names like Application/UserControl keep resolving to their WPF types. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Lantern.Desktop</RootNamespace>
+    <AssemblyName>Lantern.Desktop</AssemblyName>
+    <!-- The app icon is generated from the official mark with the app's own icon export mode
+         (Lantern.Desktop.exe with the icon export switch) and wrapped into a multi-size .ico, so the
+         taskbar, the Explorer window and Alt+Tab all show the real artwork. -->
+    <ApplicationIcon>Assets\lantern.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The consumer UI is the product; the console server stays a separate process. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reuse the shared contracts (routes, DTOs, models) and the discovery transports. -->
+    <ProjectReference Include="..\..\server\Lantern.Core\Lantern.Core.csproj" />
+    <ProjectReference Include="..\..\server\Lantern.Network\Lantern.Network.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The app's one brand mark. It is embedded as a WPF resource (not a loose file) so the pack URI
+         in Themes/Icons.xaml resolves in every build; the SVG master travels next to the exe too, so
+         the artwork a user needs is always there. -->
+    <Resource Include="Assets\lantern.png" />
+    <None Update="Assets\lantern.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

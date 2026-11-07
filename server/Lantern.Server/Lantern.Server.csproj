@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Lantern.Server</RootNamespace>
+    <AssemblyName>Lantern.Server</AssemblyName>
+    <!-- The HTTP surface is a LAN service: no HTTPS redirect, no dev certificate dance. -->
+    <UserSecretsId>lantern-server</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lantern.Core\Lantern.Core.csproj" />
+    <ProjectReference Include="..\Lantern.Database\Lantern.Database.csproj" />
+    <ProjectReference Include="..\Lantern.Media\Lantern.Media.csproj" />
+    <ProjectReference Include="..\Lantern.Network\Lantern.Network.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Screen mirror audio only. Windows has no managed WASAPI API in the BCL, and ffmpeg
+         cannot do loopback capture, so WASAPI loopback comes from NAudio. The package is
+         Windows-only at runtime, so every use is guarded by OperatingSystem.IsWindows(). -->
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The screen mirror relay ships with the app.
+         MediaMTX is an implementation component of Lantern - a component of the mirror transport,
+         started and stopped by the server, never something the user runs - so the published build
+         carries it the way it expects to find it: a "mediamtx" folder beside Lantern.Server.exe,
+         which is the first place MediaMtxLocator looks.
+         The binary is not committed (tools/mediamtx/README.md says how to fetch it); when it is
+         absent this item is skipped and the build still succeeds, with the mirror reporting a
+         missing relay instead of a broken build. -->
+    <None Include="..\..\tools\mediamtx\mediamtx.exe"
+          Link="mediamtx\mediamtx.exe"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          Condition="Exists('..\..\tools\mediamtx\mediamtx.exe')" />
+  </ItemGroup>
+
+</Project>

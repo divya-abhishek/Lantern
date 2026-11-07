@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Lantern</string>
+  <string name="app_tagline">Local Cast &amp; Screen Mirror</string>
+  <string name="app_motto">Movies. Shows. Your screen.\nNo HDMI. Just Wi-Fi.</string>
+
+  <string name="home_title">What do you want to cast?</string>
+  <string name="media_cast">Media Cast</string>
+  <string name="media_cast_sub">Movies, Shows &amp; Videos</string>
+  <string name="screen_mirror">Screen Mirror</string>
+  <string name="screen_mirror_sub">Mirror Your Windows Screen</string>
+
+  <string name="pair_title">Pair with your PC</string>
+  <string name="pair_hint">Enter this code in Lantern on Windows:</string>
+  <string name="pair_waiting">Waiting for the Windows PC to enter the code…</string>
+  <string name="pair_expired">That code expired. Getting a new one…</string>
+  <string name="pair_rejected">The PC rejected the pairing request.</string>
+
+  <string name="library_title">Media Library</string>
+  <string name="library_movies">Movies</string>
+  <string name="library_shows">TV Shows</string>
+  <string name="library_folders">Folders</string>
+  <string name="library_continue">Continue Watching</string>
+  <string name="library_recent">Recently Added</string>
+
+  <string name="action_play">Play</string>
+  <string name="action_resume">Resume</string>
+  <string name="action_restart">Start over</string>
+  <string name="action_retry">Retry</string>
+  <string name="action_back">Back</string>
+  <string name="action_connect">Connect</string>
+  <string name="action_forget">Forget this PC</string>
+  <string name="action_settings">Settings</string>
+  <string name="action_disconnect">Disconnect</string>
+
+  <string name="player_audio">Audio</string>
+  <string name="player_subtitles">Subtitles</string>
+  <string name="player_speed">Speed</string>
+  <string name="player_off">Off</string>
+  <string name="player_default">Default</string>
+</resources>

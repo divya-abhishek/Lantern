@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../server/Lantern.Media/Lantern.Media.csproj" />
+    <ProjectReference Include="../../server/Lantern.Network/Lantern.Network.csproj" />
+  </ItemGroup>
+</Project>
